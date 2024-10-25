@@ -1,0 +1,16 @@
+undirected: False
+assortative: True
+N_real: 10
+tolerance: 0.001
+decision: 10
+max_iter: 500
+rseed: 1
+err: 0.01
+initialization: 1
+verbose: 1
+out_inference: True 
+end_file: "_ACD_Wdynamic" 
+fix_beta: True 
+constrained: False
+plot_loglik: False
+in_parameters: ../data/output/5-fold_cv/real_data/US-Air-Transportation/thetaUS-Air-Transportation_11_16_1000_2_ACD_static_all

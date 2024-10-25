@@ -1,0 +1,13 @@
+N: 200
+K: 2
+prng: 10
+avg_degree: 8.
+structure: "assortative"
+corr : 0.1
+over : 0
+verbose: 2
+folder: '../data/input/synthetic/200_08/'
+output_parameters: True
+output_adj: True
+outfile_adj: null
+flag_anomalies: False

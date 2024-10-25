@@ -1,0 +1,21 @@
+undirected: False
+assortative: True
+N_real: 20
+tolerance: 0.001
+decision: 10
+max_iter: 800
+rseed: 10
+err: 0.01
+initialization: 2
+verbose: 1
+out_inference: True 
+end_file: "ACD_Wdynamic" 
+fix_pibr: False 
+fix_mupr: False 
+fix_beta: False 
+fix_phi:  False 
+constrained: False    
+fix_communities:  False 
+in_parameters: ../data/output/5-fold_cv/real_data/transfermarket/theta_adjacency_2008_23_len_8_False_ACD_Wdynamic
+# in_parameters: ../data/output/5-fold_cv/real_data/US-Air-Transportation/theta_US-Air-Transportation_11_16_1000_5_100_ACD_Wdynamic
+plot_loglik: False
