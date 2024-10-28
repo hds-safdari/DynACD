@@ -1,15 +1,13 @@
 # DynACD
 Python implementation of Dyn_ACD algorithm described in:
 
-- [1] Safdari H., & De Bacco C. (2023). *Community detection and anomaly prediction in dynamic networks*, <span style="color:red"> arxiv link.  
+- [1] Safdari H., & De Bacco C. (2023). *Community detection and anomaly prediction in dynamic networks*, <span style="color:red"> ([arxiv preprint](https://arxiv.org/abs/2404.10468)).  
 
-This is a new probabilistic generative model for anomaly, community detection in temporal networks. It assigns latent variables as community memberships to nodes and flags the edges as anomalous or regular.  <br>
+This is a probabilistic generative model for anomaly, community detection in temporal networks. It assigns latent variables as community memberships to nodes and flags the edges as anomalous or regular.  <br>
 
 If you use this code please cite [1].   
 
-The paper can be found [here] <span style="color:red"> arxiv link </span> (_preprint_).  
-
-Copyright (c) 2020 [Hadiseh Safdari](https://github.com/hds-safdari), and [Caterina De Bacco](http://cdebacco.com).
+Copyright (c) 2023 [Hadiseh Safdari](https://github.com/hds-safdari), and [Caterina De Bacco](http://cdebacco.com).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
