@@ -11,9 +11,6 @@ import matplotlib.pyplot as plt
 from scipy.stats import poisson
 import random
 
-from os.path import isdir
-from os import makedirs
-
 from scipy.optimize import brentq, root
 
 EPS = 1e-12
@@ -21,10 +18,10 @@ EPS = 1e-12
 class SyntNetDynAnomaly(object):
 
 	def __init__(self, m = 1, N = 200, K = 2, T = 8, prng = 10, avg_degree = 4., rho_anomaly = 0.1,
-				structure = 'assortative', label = None, mu = None, pi = 0.6, phi = 0.2, ell = 0.01,beta=0.2,
+				structure = 'assortative', label = None, mu = None, pi = 0.4, phi = 0.2, ell = 0.2,beta=0.2,
 				gamma = 0.5, eta = 0.5, L1=False,ag = 0.6, bg = 1., corr = 0., over = 0.,rho_node=0.9,
 				verbose = 0, folder = '../../data/input', output_parameters = False,
-				output_adj = False, outfile_adj: str = None,flag_node_anomalies=False):
+				output_adj = False, outfile_adj = None,flag_anomalies=True):
 
 		self.T = T 
 		# Set network size (node number)
@@ -36,10 +33,11 @@ class SyntNetDynAnomaly(object):
 		# Set seed random number generator
 		self.prng = prng
 		# Set label (associated uniquely with the set of inputs)
-		self.beta = beta
-		self.pi = pi
-		self.phi = phi
-
+		if label is not None:
+			self.label = label
+		else:
+			self.label = ('_').join([str(N),str(K),str(avg_degree),str(T),str(beta),str(pi).split('.')[1],str(phi).split('.')[1],str(flt(rho_anomaly,d=2))])
+			print(self.label ) 
 		# Initialize data folder path
 		self.folder = folder
 		# Set flag for storing the parameters
@@ -50,13 +48,9 @@ class SyntNetDynAnomaly(object):
 		self.outfile_adj = outfile_adj
 		# Set required average degree
 		self.avg_degree = avg_degree
-		self.rho_anomaly = rho_anomaly
+		self.rho_anomaly = rho_anomaly  
+		self.flag_anomalies = flag_anomalies
 
-		if label is not None:
-			self.label = label
-		else:
-			self.label = self.create_filename()
-		print(f"Filename = {self.label}")
 
 		# Set verbosity flag
 		if verbose > 2 and not isinstance(verbose, int):
@@ -95,7 +89,7 @@ class SyntNetDynAnomaly(object):
 			raise ValueError('The rho anomaly has to be in [0, 1]!')
 		
 		self.ExpM = self.avg_degree * self.N * 0.5 
-		mu = self.rho_anomaly * self.ExpM / ((1-np.exp(-self.pi)) * (self.N**2-self.N))
+		mu = self.rho_anomaly * self.ExpM / ((1-np.exp(-self.pi)) * (self.N**2-self.N)) 
 		# mu = self.rho_anomaly * self.ExpM / ((self.pi) * (self.N**2-self.N))
 		if mu == 1: mu = 1 - EPS
 		if mu == 0: mu = EPS 
@@ -146,56 +140,7 @@ class SyntNetDynAnomaly(object):
 		# Exp_ija=np.einsum('iq,jq->ij',Exp_ija,v) 
 		return M
 
-	def generate_A_new_timestep(self,A_previous: np.ndarray, lambda_ij: np.ndarray, prng: np.random.RandomState) -> np.ndarray:
-		'''
-		Initialize Z == 0 entries
-		'''
-		q = self.beta * lambda_ij
-		q[A_previous > 0] = 1 - self.beta
-
-		'''
-		Set entries where Z == 1, i.e. anomalies
-		'''
-		if isinstance(self.z, np.ndarray):
-			mask_anomaly = self.z == 1
-		elif isinstance(self.z,(sparse.coo_matrix,sparse.csr_matrix)):
-			mask_anomaly = self.z.todense() == 1
-
-		cond1 = A_previous > 0
-		mask = np.logical_and(mask_anomaly,cond1)
-		q[mask] = 1 - self.phi
-
-		cond0 = np.logical_not(cond1)
-		mask = np.logical_and(mask_anomaly,cond0)
-		q[mask] = self.phi * self.ell
-
-		r = prng.rand(*A_previous.shape)
-		A_new = np.ones_like(A_previous)
-		A_new[r > q] = 0
-
-		return A_new
-
-	def generate_A_0(self,lambda_ij: np.ndarray, prng: np.random.RandomState) -> np.ndarray:
-		'''
-		Initialize Z == 0 entries
-		'''
-		A_0 = prng.poisson(lambda_ij)
-
-		'''
-		Set entries where Z == 1, i.e. anomalies
-		'''
-		if isinstance(self.z, np.ndarray):
-			mask_anomaly = self.z > 0
-		elif isinstance(self.z,(sparse.coo_matrix,sparse.csr_matrix)):
-			mask_anomaly = self.z.todense() > 0
-
-		A_0[mask_anomaly] = prng.poisson(self.pi,A_0[mask_anomaly].shape)
-
-		print(np.unique(A_0))
-
-		return A_0
-
-	def anomaly_network_PB(self, parameters = None)-> dict:
+	def anomaly_network_PB(self, parameters = None):
 		"""
 			Generate a directed, possibly weighted network by using the anomaly model Poisson-Poisson
 			Steps:
@@ -211,9 +156,6 @@ class SyntNetDynAnomaly(object):
 				MultiDiGraph NetworkX object. Self-loops allowed.
 		"""
 
-		'''
-		0) Set parameters
-		'''
 		# Set seed random number generator
 		prng = np.random.RandomState(self.prng)
 
@@ -224,6 +166,19 @@ class SyntNetDynAnomaly(object):
 		else:
 			# Set latent variables
 			self.z, self.u, self.v, self.w = parameters
+		
+		if self.flag_anomalies:
+			if len(self.z.shape) == 2: 
+				self.z_t = np.zeros((self.T+1,self.N,self.N)) 
+				self.z_t[0] = np.copy(self.z.toarray())
+			elif len(self.z.shape) > 2:
+				# self.z_t = np.zeros((self.T,self.N,self.N))
+				self.z_t = np.copy(self.z.toarray())
+		else:
+			self.z_t = np.zeros((self.T+1,self.N,self.N)) 
+
+		
+
 
 		### Network generation
 		G = [nx.DiGraph() for t in range(self.T+1)]
@@ -231,96 +186,214 @@ class SyntNetDynAnomaly(object):
 			for i in range(self.N):
 				G[t].add_node(i) 
 
+		# # Compute M_ij
+		# M = np.einsum('ik,jq->ijkq', self.u, self.v)
+		# M = np.einsum('ijkq,kq->ij', M, self.w)
+
 		# Compute M_ij
 		M = self.Exp_ija_matrix(self.u, self.v,self.w)
 		np.fill_diagonal(M, 0)
- 
-		# Set c sparsity parameter 
-		c = brentq(eq_c, EPS, 20, args = (M, self.N,self.ExpM,self.rho_anomaly,self.mu))
+
+		if self.flag_anomalies: 
+			# Set c sparsity parameter 
+			c = brentq(eq_c, EPS, 20, args = (M, self.N,self.ExpM,self.rho_anomaly,self.mu))
+		else:
+
+			c = brentq(eq_c, EPS, 20, args = (M, self.N,self.ExpM,0.,0.))
 
 		self.w *= c
-
-		lambda_ij = c * M
-		lambda_ij[self.z.nonzero() == 1] = self.pi
+ 
 
 		'''
-		a) Build network: t=0.
+		a) Build network: regular edges at t=0.
 		'''
-		A_0 = self.generate_A_0(lambda_ij, prng=prng)
-		G[0].add_edges_from(list(zip(*A_0.nonzero())))
+		# A = prng.poisson(c * M)
+		# # A[A>0] = 1 # binarize the adjacency matrix
+		# np.fill_diagonal(A, 0)
+		# G0 = nx.to_networkx_graph(A, create_using=nx.MultiDiGraph)
+ 
+		# '''
+		# b) Build network: anomalous edges at t=0. 
+		# '''
+		# # weighted anomaly
+		# A[self.z.nonzero()] = prng.poisson(self.pi * self.z.count_nonzero())
+		# # A[self.z.nonzero()] = prng.binomial(1,self.pi,self.z.count_nonzero())
+		# # A[A>0] = 1 # binarize the adjacency matrix
+		# np.fill_diagonal(A, 0)
+		# G = nx.to_networkx_graph(A, create_using=nx.MultiDiGraph)  
 
-		'''
-		b) Build network: t> 0. 
-		'''
-		A_previous = A_0
-		for t in range(1,self.T+1):
-			A_new = self.generate_A_new_timestep(A_previous, lambda_ij,prng)
-			G[t].add_edges_from(list(zip(*A_new.nonzero())))
-			A_previous = np.copy(A_new)
+		if self.flag_anomalies:
+			'''
+			Build network: transitions at t = 0. 
+			'''  
+			list_t = np.arange(self.N)
+			list_t = list_t.tolist()  
+			random.shuffle(list_t)
+			for i in list_t:
+				for j in list_t:
+					if i != j: 
+						if not self.z[i,j]: 
+							lambda_ij = c * M[i,j]  
+						else:
+							lambda_ij = self.pi 
+							
+						A_ij = prng.poisson(lambda_ij, 1)[0]
 
-		### Network post-processing
-		nodes = list(G[0].nodes())
-		assert len(nodes) == self.N 
-		A = [nx.to_scipy_sparse_array(G[t], nodelist=nodes, weight='weight') for t in range(len(G))]
+						if A_ij > 0:
+							G[0].add_edge(i, j, weight = 1) # binarized?   
+			
+			'''
+			Build network: transitions at t> 0. 
+			'''  
+			list_t = np.arange(self.N)
+			list_t = list_t.tolist()  
+			random.shuffle(list_t)
+			for t in range(self.T):
+				for i in list_t:
+					for j in list_t: 
+						if i != j:
+							if not self.z[i,j]:
+								lambda_ij = c * M[i,j] 
+								exp_bl = np.exp(- self.beta * lambda_ij) 
+								if G[t].has_edge(i,j): # the edge at previous time step: determines the transition rate 
+									q = (1 - self.beta) 
+								else:
+									q = self.beta * lambda_ij 
+								r = prng.rand() 
+								if r <= q:
+									G[t+1].add_edge(i, j, weight = 1) # binarized
+							else:  
+								r = prng.rand()  
+								exp_pl = np.exp(-self.phi*self.ell)
+								# exp_pl = 1
+								if G[t].has_edge(i,j): # the edge at previous time step: determines the transition rate 
+									q = (1 - self.phi) 
+								else:
+									q = self.phi * self.ell 
+								r = prng.rand() 
+								if r <= q:
+									G[t+1].add_edge(i, j, weight = 1) # binarized
+									self.z_t[t+1,i,j] = 1
+
+			### Network post-processing
+			nodes = list(G[0].nodes())
+			assert len(nodes) == self.N 
+			A = [nx.to_scipy_sparse_array(G[t], nodelist=nodes, weight='weight') for t in range(len(G))]
+		else:#self.flag_anomalies:False
+			'''
+			Build network: transitions at t = 0. 
+			'''  
+			list_t = np.arange(self.N)
+			list_t = list_t.tolist()  
+			random.shuffle(list_t)
+			for i in list_t:
+				for j in list_t:
+					if i != j: 
+						lambda_ij = c * M[i,j] 
+						A_ij = prng.poisson(lambda_ij, 1)[0] 
+						if A_ij > 0:
+							G[0].add_edge(i, j, weight = 1) # binarized?   
+			
+			'''
+			Build network: transitions at t> 0. 
+			'''  
+			list_t = np.arange(self.N)
+			list_t = list_t.tolist()  
+			random.shuffle(list_t)
+			for t in range(self.T):
+				for i in list_t:
+					for j in list_t: 
+						if i != j: 
+							lambda_ij = c * M[i,j] 
+							exp_bl = np.exp(- self.beta * lambda_ij) 
+							if G[t].has_edge(i,j): # the edge at previous time step: determines the transition rate 
+								q = (1 - self.beta) 
+							else:
+								q = self.beta * lambda_ij 
+							r = prng.rand() 
+							if r <= q:
+								G[t+1].add_edge(i, j, weight = 1) # binarized 
+
+			### Network post-processing
+			nodes = list(G[0].nodes())
+			assert len(nodes) == self.N 
+			A = [nx.to_scipy_sparse_array(G[t], nodelist=nodes, weight='weight') for t in range(len(G))]
+
 		
 
 		# Keep largest connected component
 		A_sum = A[0].copy()
-		for t in range(1,len(A)): A_sum += A[t]
+		for t in range(1,len(A)): A_sum += A[t] 
 		G_sum = nx.from_scipy_sparse_array(A_sum,create_using=nx.DiGraph)
 		Gc = max(nx.weakly_connected_components(G_sum), key=len)
 		nodes_to_remove = set(G_sum.nodes()).difference(Gc)
-		G_sum.remove_nodes_from(list(nodes_to_remove))
-
-		self.nodes = list(G_sum.nodes())
-		for t in range(len(G)):
-			G[t].remove_nodes_from(list(nodes_to_remove))
-		'''
-		Update quantities
-		'''
-		A = [nx.to_scipy_sparse_array(G[t], nodelist=self.nodes, weight='weight') for t in range(len(G))]
-		A_sum = A[0].copy()
-		for t in range(1,len(A)): A_sum += A[t]
-		self.N = len(self.nodes)
-		if self.verbose > 0:
-			print('self.N :', self.N )
-			print(f"len(A):{len(A)}")
+		if self.flag_anomalies:
+			G_sum.remove_nodes_from(list(nodes_to_remove))
 
 		if self.output_adj:
-			self._output_adjacency(A_sum,A,outfile=self.outfile_adj)
-		try:
-			self.z = np.take(self.z, nodes, 1)
-			self.z = np.take(self.z, nodes, 0)
-		except:
-			self.z = self.z[:,self.nodes]
-			self.z = self.z[self.nodes]
+			self._output_adjacency(nodes,A_sum,A,nodes_to_keep=list(G_sum.nodes()), outfile = self.outfile_adj)
+
+		nodes = list(G_sum.nodes())
+
+		if self.flag_anomalies: 
+			for t in range(len(G)):
+				G[t].remove_nodes_from(list(nodes_to_remove))
+ 
+		self.N = len(nodes)
+		print('self.N :', self.N )
+
+		# G0 = G0.subgraph(nodes)
+		# A = nx.to_scipy_sparse_array(G, nodelist=nodes, weight='weight') #
+		# A0 = nx.to_scipy_sparse_array(G0, nodelist=nodes, weight='weight') #
+		if self.flag_anomalies:
+			for t in range(self.T): 
+				self.z_t[t] = np.take(self.z_t[t], nodes, axis=1)
+				self.z_t[t] = np.take(self.z_t[t], nodes, axis=0)
+		else:
+			n_nodes = len(nodes)
+			self.z_t = np.zeros((self.T,n_nodes,n_nodes)) 
+
+			# try:
+			# 	self.z_t[t] = np.take(self.z_t[t], nodes, axis=1)
+			# 	self.z_t[t] = np.take(self.z_t[t], nodes, axis=0)
+			# except:
+			# 	self.z_t[t] = self.z_t[:,nodes]
+			# 	self.z_t[t] = self.z_t[t][nodes]  
+
 
 		if self.u is not None:
-			self.u = self.u[self.nodes]
-			self.v = self.v[self.nodes]
+			self.u = self.u[nodes]
+			self.v = self.v[nodes] 
+		self.N = len(nodes)
 
 		if self.verbose > 0:print(f'Removed {len(nodes_to_remove)} nodes, because not part of the largest connected component')
 
 		if self.verbose > 0:
 			for t in range(len(G)):
 				print('-'*30)
-				print(f't = {t}')
-				print_G_stats(G[t])
+				print('t=',t)
+				ave_w_deg = np.round(2 * G[t].number_of_edges() / float(G[t].number_of_nodes()), 3)   
+				print(f'Number of nodes: {G[t].number_of_nodes()} \n'
+					  f'Number of edges: {G[t].number_of_edges()}')
+				print(f'Average degree (2E/N): {ave_w_deg}')
+				print(f'Reciprocity at t: {nx.reciprocity(G[t])}')
 				print('-'*30)
 
 			self.check_reciprocity_tm1(A,A_sum)
-
-		rec_syn = [np.round(nx.reciprocity(G[t]), 4) for t in range(len(G))]
+		rec_syn = []
+		for t in range(len(G)):
+			rec_syn.append(np.round(nx.reciprocity(G[t]), 4))
 
 		if self.output_parameters:
-			self._output_results()
+			self._output_results(nodes)
 
 		if self.verbose == 2:
-			for i in range(self.T+1):
+			for i in range(self.T):
 				self._plot_A(A[i])
 			if M is not None: self._plot_M(M)
 
-		return {'G':G,'A':A, "rec":rec_syn}
+		return G, rec_syn
+
 
 	def _generate_lv(self, prng = 42):
 		"""
@@ -355,8 +428,7 @@ class SyntNetDynAnomaly(object):
 			density = self.mu
 		z = sparse.random(self.N,self.N, density=density, data_rvs=np.ones)
 		upper_z = sparse.triu(z) 
-		z = upper_z + upper_z.T
-		z = z.astype('int')
+		z = upper_z + upper_z.T  
 
 		# Generate u, v for overlapping communities
 		u, v = membership_vectors(prng, self.L1, self.eta, self.ag, self.bg, self.K,
@@ -365,11 +437,11 @@ class SyntNetDynAnomaly(object):
 		w = affinity_matrix(self.structure, self.N, self.K, self.avg_degree)
 		return z, u, v, w
 
-	def _build_multilayer_edgelist(self,A_tot,A) -> pd.DataFrame:
+	def _build_multilayer_edgelist(self,nodes,A_tot,A,nodes_to_keep=None):
 		A_coo = A_tot.tocoo()
 		data_dict = {'source':A_coo.row,'target':A_coo.col}
 		for t in range(len(A)):
-			data_dict[f'weight_t{t}'] = np.squeeze(np.asarray(A[t][A_tot.nonzero()]))
+			data_dict['weight_t'+str(t)] = np.squeeze(np.asarray(A[t][A_tot.nonzero()]))
 		  
 		df_res = pd.DataFrame(data_dict)
 		# print(len(df_res))
@@ -385,7 +457,7 @@ class SyntNetDynAnomaly(object):
 	
 		return df_res
 
-	def _output_results(self):
+	def _output_results(self, nodes):
 		"""
 			Output results in a compressed file.
 			INPUT
@@ -393,14 +465,15 @@ class SyntNetDynAnomaly(object):
 			nodes : list
 					List of nodes IDs.
 		""" 
-		output_parameters = f"{self.folder}theta_{self.label}_{self.prng}.npz"
-		np.savez_compressed(output_parameters, z=self.z.todense(), u=self.u, v=self.v,
-						w=self.w, beta=self.beta, ell=self.ell, phi=self.phi, mu=self.mu, pi=self.pi, nodes=self.nodes)
+		output_parameters = self.folder + 'theta_' + self.label + '_' + str(self.prng)  
+		np.savez_compressed(output_parameters + '.npz', z=self.z_t, u=self.u, v=self.v,
+						w=self.w, beta=self.beta, ell=self.ell, phi=self.phi, mu=self.mu, pi=self.pi, nodes=nodes)
 		if self.verbose:
-			print(f'Parameters saved in: {output_parameters}')
+			print()
+			print(f'Parameters saved in: {output_parameters}.npz')
 			print('To load: theta=np.load(filename), then e.g. theta["u"]')
 
-	def _output_adjacency(self,A_tot,A, outfile = None):
+	def _output_adjacency(self,nodes,A_tot,A,nodes_to_keep=None, outfile = None):
 		"""
 			Output the adjacency matrix. Default format is space-separated .csv
 			with 3 columns: node1 node2 weight
@@ -412,13 +485,12 @@ class SyntNetDynAnomaly(object):
 					 Name of the adjacency matrix.
 		"""
 		if outfile is None:
-			outfile = f'syn_{self.label}_{self.prng}.csv'
+			outfile = 'syn_' + self.label + '_' + str(self.prng)  + '.dat'
 
-		if isdir(self.folder) == False: makedirs(self.folder)
-		df = self._build_multilayer_edgelist(A_tot,A)
-		df.to_csv(f"{self.folder}{outfile}", index=False)
+		df = self._build_multilayer_edgelist(nodes,A_tot,A,nodes_to_keep=nodes_to_keep)
+		df.to_csv(self.folder + outfile, index=False, sep=' ')
 		if self.verbose:
-			print(f'Adjacency matrix saved in:\n{self.folder}{outfile}.')
+			print(f'Adjacency matrix saved in: {self.folder + outfile}')
 
 	def _plot_A(self, A, cmap = 'PuBuGn',title='Adjacency matrix'):
 		"""
@@ -430,7 +502,7 @@ class SyntNetDynAnomaly(object):
 			cmap : Matplotlib object
 				Colormap used for the plot.
 		"""
-		Ad = A.todense()
+		Ad = A.todense() 
 		fig, ax = plt.subplots(figsize=(7, 7))
 		ax.matshow(Ad, cmap = plt.get_cmap(cmap))
 		ax.set_title(title, fontsize = 15)
@@ -489,21 +561,6 @@ class SyntNetDynAnomaly(object):
 			print(nnz,M_t_T.nonzero()[0].shape[0]/nnz,M_tm1_T.nonzero()[0].shape[0]/nnz)
 
 
-	def create_filename(
-			self,
-			sep: str = '_'
-		) -> str:
-			list_str = [str(self.N),str(self.K),str(self.avg_degree),str(self.T),str(self.beta)]
-			list_str = list_str + [str(self.pi).split('.')[1],str(self.phi).split('.')[1], str(flt(self.rho_anomaly,d=2))]
-			return (sep).join(list_str)
-
-
-def print_G_stats(G:nx.DiGraph):
-	ave_w_deg = np.round(2 * G.number_of_edges() / float(G.number_of_nodes()), 3)
-	print(f'Number of nodes: {G.number_of_nodes()} \n'
-		  f'Number of edges: {G.number_of_edges()}')
-	print(f'Average degree (2E/N): {ave_w_deg}')
-	print(f'Reciprocity at t: {nx.reciprocity(G)}')
 
 def membership_vectors(prng = 10, L1 = False, eta = 0.5, alpha = 0.6, beta = 1, K = 2, N = 100, corr = 0., over = 0.):
 	"""
@@ -638,3 +695,26 @@ def eq_c(c,M, N,E,rho_a,mu):
 
 def flt(x,d=1):
 	return round(x, d)
+
+def preprocess(X):
+	"""
+		Pre-process input data tensor.
+		If the input is sparse, returns an int sptensor. Otherwise, returns an int dtensor.
+		Parameters
+		----------
+		X : ndarray
+			Input data (tensor).
+		Returns
+		-------
+		X : sptensor/dtensor
+			Pre-processed data. If the input is sparse, returns an int sptensor. Otherwise, returns an int dtensor.
+	"""
+
+	if not X.dtype == np.dtype(int).type:
+		X = X.astype(int)
+	if isinstance(X, np.ndarray) and is_sparse(X):
+		X = sptensor_from_dense_array(X)
+	else:
+		X = skt.dtensor(X)
+
+	return X
