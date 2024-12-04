@@ -24,7 +24,7 @@ class SyntNetDynAnomaly(object):
 				structure = 'assortative', label = None, mu = None, pi = 0.6, phi = 0.2, ell = 0.01,beta=0.2,
 				gamma = 0.5, eta = 0.5, L1=False,ag = 0.6, bg = 1., corr = 0., over = 0.,rho_node=0.9,
 				verbose = 0, folder = '../../data/input', output_parameters = False,
-				output_adj = False, outfile_adj: str = None):
+				output_adj = False, outfile_adj: str = None,flag_node_anomalies=False):
 
 		self.T = T 
 		# Set network size (node number)
@@ -61,8 +61,11 @@ class SyntNetDynAnomaly(object):
 		# Set verbosity flag
 		if verbose > 2 and not isinstance(verbose, int):
 			raise ValueError('The verbosity parameter can only assume values in {0,1,2}!')
-		self.verbose = verbose 
+		self.verbose = verbose
 
+		# Set Bernoullis parameters
+		if mu < 0 or mu > 1:
+    		raise ValueError('The   parameter mu has to be in [0, 1]!')
 
 		if pi < 0 or pi > 1:
 			raise ValueError('The   parameter pi has to be in [0, 1]!')
@@ -97,11 +100,6 @@ class SyntNetDynAnomaly(object):
 		if mu == 0: mu = EPS 
 		assert mu > 0. and mu < 1.
 		self.mu = mu
-
-
-		# Set Bernoullis parameters
-		if mu < 0 or mu > 1:
-			raise ValueError('The   parameter mu has to be in [0, 1]!')
 
 		
 		### Set MT inputs
@@ -191,6 +189,8 @@ class SyntNetDynAnomaly(object):
 			mask_anomaly = self.z.todense() > 0
 
 		A_0[mask_anomaly] = prng.poisson(self.pi,A_0[mask_anomaly].shape)
+
+		print(np.unique(A_0))
 
 		return A_0
 

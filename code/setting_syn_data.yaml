@@ -9,5 +9,4 @@ verbose: 2
 folder: '../data/input/synthetic/200_08/'
 output_parameters: True
 output_adj: True
-outfile_adj: null
-flag_anomalies: False
+outfile_adj: null 

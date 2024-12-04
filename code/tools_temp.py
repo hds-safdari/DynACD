@@ -104,8 +104,8 @@ def read_graph(df_adj, ego='source', alter='target', undirected=False, noselfloo
 	for index, row in df_adj.iterrows():
 		v1 = row[ego]
 		v2 = row[alter]
-		for l in range(L):
-			if row[l + 2] > 0:
+		for l in range(L): 
+			if row.iloc[l + 2] > 0:
 				if A[l].has_edge(v1, v2):
 					if binary == True:
 						A[l][v1][v2][0]['weight'] = max(int(row[l + 2]),1)
@@ -115,7 +115,7 @@ def read_graph(df_adj, ego='source', alter='target', undirected=False, noselfloo
 					if binary == True:
 						A[l].add_edge(v1, v2, weight=max(int(row[l + 2]),1))
 					else:
-						A[l].add_edge(v1, v2, weight=int(row[l + 2]))
+						A[l].add_edge(v1, v2, weight=int(row.iloc[l + 2]))
 
 	# remove self-loops
 	if noselfloop:

@@ -12,11 +12,8 @@ import sys
 from scipy.stats import poisson
 import sktensor as skt
 import matplotlib.pyplot as plt
-import sys
-sys.path.append('../')
-sys.path.append('../Dyn_ACD') 
-from Dyn_ACD  import Dyn_ACD_static 
-from Dyn_ACD  import Dyn_ACD_wtemp
+# import Dyn_ACD_static 
+import Dyn_ACD_wtemp
 
  
 def QIJ_dense(data,data0,lambda0_ija, lambda0_ija_0, T, beta, phi, ell, pi, mu,EPS=1e-12):

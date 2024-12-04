@@ -12,7 +12,6 @@ import sktensor as skt
 import numpy as np
 import pandas as pd
 from termcolor import colored
-import Dyn_ACD.time_glob as gl
 from scipy.stats import poisson 
 
 import matplotlib.pyplot as plt
@@ -154,7 +153,6 @@ class Dyn_ACD_static:
 		if self.fix_mupr and self.flag_anomaly == True:
 			self.mupr = self.mupr_old = self.mupr_f = self.mupr0 
 
-	# @gl.timeit('fit')
 	def fit(self, data, T, nodes, mask=None):
 		"""
 			Model directed networks by using a probabilistic generative model that assume community parameters and
@@ -701,7 +699,6 @@ class Dyn_ACD_static:
 		self.phi_old = np.copy(self.phi)  
 		self.ell_old = np.copy(self.ell) 
 
-	# @gl.timeit('cache')
 	def _update_cache(self,data_b1mAtm1At,data_bAtm11mAt,data_bAtm1At,data0,data_b1mAtm1AtT,data_bAtm11mAtT,data_bAtm1AtT,data0_T,subs_nzp,subs_nz,update_Q=True):
 		"""
 			Update the cache used in the em_update. 
@@ -1839,7 +1836,6 @@ class Dyn_ACD_static:
 
 		return it, loglik, coincide, convergence
 
-	# @gl.timeit('Likelihood')
 	def __Likelihood(self, datam0, data0, data_T, subs_nzp, subs_nz,T,mask=None,subs_nz_mask=None,EPS=1e-12):
 		"""
 			Compute the pseudo log-likelihood of the data.
@@ -1856,7 +1852,6 @@ class Dyn_ACD_static:
 			l : float
 				Pseudo log-likelihood value.
 		""" 
-		# self._update_cache(data, data_T_vals, subs_nz)
 		if self.T > 1.:   
 			self.lambda0_ija  = self._lambda0_full(self.u, self.v, self.w)   
 		self.lambda0_ija_0 = self._lambda0_full(self.u0, self.v0, self.w0)  

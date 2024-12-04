@@ -13,8 +13,7 @@ import sys
 import sktensor as skt
 import numpy as np
 import pandas as pd
-from termcolor import colored 
-import Dyn_ACD.time_glob as gl
+from termcolor import colored  
 from scipy.stats import poisson 
 
 import matplotlib.pyplot as plt
@@ -24,19 +23,6 @@ from scipy.sparse import coo_matrix
 import scipy.sparse as sps
 from scipy.sparse.linalg import inv
 from scipy import sparse
-
-# def timer_func(some_function):
-# 	# This function shows the execution time of
-# 	# the function object passed
-# 	def wrapper(*args, **kwargs):
-# 		t1 = time.time()
-# 		result = some_function(*args, **kwargs)
-# 		t2 = time.time()
-# 		print(f'Function {some_function.__name__!r} executed in {(t2-t1):.4f}s')
-# 		return result
-#
-# 	return wrapper
-
 EPS = 1e-12
 
 class Dyn_ACD_wtemp:  
@@ -322,11 +308,7 @@ class Dyn_ACD_wtemp:
 		rng = np.random.RandomState(self.rseed)
 
 		for r in range(self.N_real):   
-			self._initialize(rng=rng)  
-			
-			# if T > 0:   
-			# 	self.beta_hat = np.ones(T) * self.beta
-			# 	self.beta_hat[0] = 1
+			self._initialize(rng=rng)   
 
 			self._update_old_variables() 
 
@@ -539,8 +521,7 @@ class Dyn_ACD_wtemp:
 		"""
 
 		if rng is None:
-			rng = np.random.RandomState(self.rseed)
-		# self.beta = rng.random_sample(1) 
+			rng = np.random.RandomState(self.rseed) 
 		self.beta  = rng.rand() 
 
 	def _randomize_phi(self, rng=None):
@@ -553,8 +534,7 @@ class Dyn_ACD_wtemp:
 		"""
 
 		if rng is None:
-			rng = np.random.RandomState(self.rseed)
-		# self.phi = rng.random_sample(1) 
+			rng = np.random.RandomState(self.rseed) 
 		self.phi  = rng.rand() 
 	
 	def _randomize_ell(self, rng=None):
@@ -567,10 +547,7 @@ class Dyn_ACD_wtemp:
 		"""
 
 		if rng is None:
-			rng = np.random.RandomState(self.rseed)
-		# self.ell = rng.random_sample(1) 
-		# self.ell  = rng.rand(1,self.T)
-		# self.ell  = [rng.uniform(0, 1) for _ in range(self.T)]
+			rng = np.random.RandomState(self.rseed) 
 		self.ell = rng.rand()
 	
 	def _randomize_pibr(self, rng=None):
@@ -585,7 +562,6 @@ class Dyn_ACD_wtemp:
 
 		if rng is None:
 			rng = np.random.RandomState(self.rseed)  
-		# self.pibr  = rng.random_sample(1)[0] 
 		self.pibr  = rng.rand()  
 	
 	def _randomize_mupr(self, rng=None):
@@ -600,7 +576,6 @@ class Dyn_ACD_wtemp:
 
 		if rng is None:
 			rng = np.random.RandomState(self.rseed)
-		# self.mupr = rng.random_sample(1)[0]
 		self.mupr  = rng.rand() 
 
 	def _randomize_w(self, rng):
@@ -635,21 +610,6 @@ class Dyn_ACD_wtemp:
 			rng : RandomState
 				  Container for the Mersenne Twister pseudo-random number generator.
 		"""
-		# if self.T > 0:
-		# 	if rng is None:
-		# 		rng = np.random.RandomState(self.rseed)
-		# 	self.u = rng.random_sample((self.N,self.K)) * 0.01
-		# 	row_sums = self.u.sum(axis=1) 
-		# 	self.u[row_sums > 0] /= row_sums[row_sums > 0, np.newaxis]
-
-		# 	if not self.undirected:
-		# 		self.v = rng.random_sample((self.N,self.K)) * 0.01
-		# 		row_sums = self.v.sum(axis=1)
-		# 		self.v[row_sums > 0] /= row_sums[row_sums > 0, np.newaxis]
-		# 	else:
-		# 		self.v = self.u
-		
-
 		if rng is None:
 			rng = np.random.RandomState(self.rseed)
 		self.u = rng.random_sample((self.N,self.K))
@@ -681,8 +641,6 @@ class Dyn_ACD_wtemp:
 			self.phi_old = np.copy(self.phi)    
 			self.ell_old = np.copy(self.ell)  
 			self.beta_old = np.copy(self.beta)  
-
-	# @gl.timeit('cache')
 
 	# @timer_func
 	def _update_cache(self,data_b1mAtm1At,data_bAtm11mAt,data_bAtm1At,data0,data_b1mAtm1AtT,data_bAtm11mAtT,data_bAtm1AtT,data0_T,subs_nzp,subs_nz,sum_b1mAtm1At, sum_bAtm11mAt, sum_bAtm1At,sum_b1mAtm1At_T,sum_bAtm11mAt_T, sum_bAtm1At_T,update_Q=True):
@@ -769,13 +727,10 @@ class Dyn_ACD_wtemp:
 		"""      
 		if self.T >0:
 			lambda0_ija    = self._lambda0_full(self.u, self.v, self.w[1:])
-		lambda0_ija_0  = self._lambda0_full(self.u, self.v,  (self.w[0])[np.newaxis])
-		# lambda0_ijaT_0 = self._lambda0_full(self.v0, self.u0, self.w0)
-		# lambda0_ijaT   = self._lambda0_full(self.v, self.u, self.w)
+		lambda0_ija_0  = self._lambda0_full(self.u, self.v,  (self.w[0])[np.newaxis]) 
 		if self.T >0:
 			lambda0_ijaT = np.einsum('aij->aji', lambda0_ija)
-		lambda0_ijaT_0 = np.einsum('aij->aji',lambda0_ija_0)
-		# assert np.allclose(np.einsum('aij->aji',lambda0_ija),lambda0_ijaT)
+		lambda0_ijaT_0 = np.einsum('aij->aji',lambda0_ija_0) 
 		"""
 			Compute Q_ij_dense at zeros of (1-Aij(t-1)) * Aij(t) by dense Aij(t-1) * (1-Aij(t)) and Aij(t-1) * Aij(t) 
 		"""
@@ -783,8 +738,7 @@ class Dyn_ACD_wtemp:
 			self.dense_data0 = data0.toarray()
 			self.dense_data0T = data0_T.toarray()
 
-		if self.T > 0:
-			# A(t) (1-A(t-1)), A(t-1) (1-A(t)), and A(t-1) A(t) and their tranposes to  dense array
+		if self.T > 0: 
 			if not hasattr(self,'dense_data_b1mAtm1At'):
 				self.dense_data_b1mAtm1At = data_b1mAtm1At.toarray() 
 				self.dense_data_bAtm11mAt = data_bAtm11mAt.toarray()
@@ -832,11 +786,8 @@ class Dyn_ACD_wtemp:
 			assert (self.Q_ij_dense_0[0] > 1).sum() == 0
 			self.Q_ij_nz_0 = self.Q_ij_dense_0[subs_nz]
 
-			# self.Q0A0  = (Q_ij_dense_0[subs_nz] * dense_data0[subs_nz]).sum()	  # needed in the update of Likelihood
 			self.Qsum = (self.Q_ij_dense_0).sum()  # needed in the update of Likelihood
 			self.b1mQsum = (1-self.Q_ij_dense_0).sum()   # needed in the update of Likelihood
-			# self.Q_ij_dense_0 = np.copy(Q_ij_dense_0)
-			# self.Q_ij_nz_0 = np.copy(Q_ij_dense_0[subs_nz])
 			self.Q0A0  = (data0.vals * self.Q_ij_nz_0).sum() 
 
 
@@ -846,15 +797,12 @@ class Dyn_ACD_wtemp:
 			"""
 				Compute Q_ij_dense for t>0, full dataset, poisson
 			"""
-			# s = time.time()
 			Q_ij_dense_tot_0   = (self.mupr * poisson.pmf(self.dense_data0, self.pibr) * poisson.pmf(self.dense_data0T, self.pibr))[0]#* np.exp(-self.pibr*2)
 			Q_ij_dense_d_tot_0 = ((1-self.mupr) * poisson.pmf(self.dense_data0, lambda0_ija_0) * poisson.pmf(self.dense_data0T, lambda0_ijaT_0) )[0]  #* np.exp(-(lambda0_ija_0+lambda0_ijaT_0)) 
 
-			# s = time.time()
 			sum_a = (sum_b1mAtm1At + sum_bAtm11mAt + sum_b1mAtm1At_T + sum_bAtm11mAt_T)
 			sum_b = (sum_bAtm1At + sum_bAtm1At_T)
 			if self.phi > 0:
-				# print(sum_b1mAtm1At.shape)
 				log_Q_ij_dense  = (sum_a) * np.log(self.phi+EPS)
 			else:
 				raise ValueError('Invalid value', self.phi)
@@ -868,13 +816,8 @@ class Dyn_ACD_wtemp:
 				log_Q_ij_dense  += (sum_b1mAtm1At + sum_b1mAtm1At_T) * np.log(self.ell+EPS)
 			else:
 				raise ValueError('Invalid value', self.ell)
-			# print('log_Q_ij_dense.shape', log_Q_ij_dense.shape)
 
 			Q_ij_dense_tot[0] =  np.exp(log_Q_ij_dense) * np.exp(-2. * self.T * self.ell * self.phi)  * Q_ij_dense_tot_0 
-			# e = time.time()
-			# print(f"Q_ij_dense_tot[0] created in {e - s} sec.")
-
-			# s = time.time()
 			if self.beta > 0:
 				log_Q_ij_dense_d = (sum_a) * np.log(self.beta + EPS)
 			else:
@@ -887,9 +830,6 @@ class Dyn_ACD_wtemp:
 			
 			tmp = np.einsum('aij,aij ->ij', self.dense_data_b1mAtm1At, np.log(lambda0_ija + EPS))
 			log_Q_ij_dense_d += (tmp + tmp.T)
-			# assert np.allclose(tmp.T,np.einsum('aij,aij ->ij', self.dense_data_b1mAtm1AtT, np.log(lambda0_ijaT + EPS)))
-			# log_Q_ij_dense_d += np.einsum('aij,aij ->ij', self.dense_data_b1mAtm1At, np.log(lambda0_ija + EPS))
-			# log_Q_ij_dense_d += np.einsum('aij,aij ->ij', self.dense_data_b1mAtm1AtT, np.log(lambda0_ijaT + EPS))
 			log_Q_ij_dense_d -= self.beta * (lambda0_ija.sum(axis=0) + lambda0_ijaT.sum(axis=0))
 			Q_ij_dense_d_tot[0] = Q_ij_dense_d_tot_0 * np.exp(log_Q_ij_dense_d)
 
@@ -900,14 +840,8 @@ class Dyn_ACD_wtemp:
 			Q_ij_dense_tot = np.maximum( Q_ij_dense_tot, transpose_tensor(Q_ij_dense_tot)) # make it symmetric
 			np.fill_diagonal(Q_ij_dense_tot[0], 0.)
 
-			# e = time.time()
-			# print(f"Q_ij_dense_tot created in {e - s} sec.")
 			assert (Q_ij_dense_tot[0] > 1).sum() == 0
 			assert np.allclose(Q_ij_dense_tot[0], Q_ij_dense_tot[0].T, rtol=1e-05, atol=1e-08)
-
-
-			# Q_ij_dense_0 = np.zeros(dense_data0.shape)
-			# Q_ij_dense_0 = np.copy(Q_ij_dense_tot)
 
 			s = time.time() 
 			self.QAtm1At     = np.einsum('ij, aij-> ', Q_ij_dense_tot[0], self.dense_data_bAtm1At)   # needed in the update of Likelihood
@@ -921,20 +855,12 @@ class Dyn_ACD_wtemp:
 
 			self.Qsum = (Q_ij_dense_tot).sum()  # needed in the update of Likelihood
 			self.b1mQsum = (1-Q_ij_dense_tot).sum()   # needed in the update of Likelihood
-			# assert (Q_ij_dense_0 > 1).sum() == 0
-			# self.Q_ij_dense_0 = np.copy(Q_ij_dense_tot)
+
 			self.Q_ij_dense_0 = Q_ij_dense_tot
 			self.Q_ij_nz_0 = Q_ij_dense_tot[subs_nz]
 			self.Q0A0  = (data0.vals * Q_ij_dense_tot[subs_nz]).sum()
 
-			# e = time.time()
-			# print(f"Q_ij_dense_tot_npz self in {e - s} sec.")
-
-			# s = time.time()
-
 			Q_ij_dense_tot_npz = np.tile(Q_ij_dense_tot, (self.T, 1, 1)) 
-			# e = time.time()
-			# print(f"Q_ij_dense_tot_npz in {e - s} sec.")
 			
 
 		if self.T > 0:  
@@ -942,8 +868,6 @@ class Dyn_ACD_wtemp:
 		else:
 			return Q_ij_dense_0, Q_ij_dense_0[subs_nz]
 
-
-	# @gl.timeit('lambda0_nz')
 	# @timer_func
 	def _lambda0_nz(self, subs_nz, u, v, w): 
 		"""
@@ -973,34 +897,6 @@ class Dyn_ACD_wtemp:
 
 		return nz_recon_I
 	
-	# def _lambda0_nz_0(self, subs_nz, u, v, w): 
-	# 	"""
-	# 		Compute the mean lambda0_ij for only non-zero entries.
-	# 		Parameters
-	# 		----------
-	# 		subs_nz : tuple
-	# 				  Indices of elements of data that are non-zero.
-	# 		u : ndarray
-	# 			Out-going membership matrix.
-	# 		v : ndarray
-	# 			In-coming membership matrix.
-	# 		w : ndarray
-	# 			Affinity tensor.
-	# 		Returns
-	# 		-------
-	# 		nz_recon_I : ndarray
-	# 					 Mean lambda0_ij for only non-zero entries.
-	# 	"""      
-
-	# 	if not self.assortative:
-	# 		nz_recon_IQ = np.einsum('Ik,Ikq->Iq', u[subs_nz[1], :], w[subs_nz[0], :, :])
-	# 	else:
-	# 		nz_recon_IQ = np.einsum('Ik,Ik->Ik', u[subs_nz[1], :], w[subs_nz[0], :])
-	# 	nz_recon_I = np.einsum('Iq,Iq->I', nz_recon_IQ, v[subs_nz[2], :])
-
-	# 	return nz_recon_I
-	
-	# @gl.timeit('update_em')
 	# @timer_func
 	def _update_em(self,data_b1mAtm1At,data_bAtm11mAt,data_bAtm1At,data0,data_b1mAtm1AtT,data_bAtm11mAtT,data_bAtm1AtT,data0_T,subs_nzp,subs_nz,sum_b1mAtm1At, sum_bAtm11mAt, sum_bAtm1At,sum_b1mAtm1At_T,sum_bAtm11mAt_T, sum_bAtm1At_T):
 		# data_t,data_b1mAtm1At_t, data_T_vals_t,subs_nz,subs_nzp
@@ -1028,7 +924,6 @@ class Dyn_ACD_wtemp:
 
 		self._update_cache(data_b1mAtm1At,data_bAtm11mAt,data_bAtm1At,data0,data_b1mAtm1AtT,data_bAtm11mAtT,data_bAtm1AtT,data0_T,subs_nzp,subs_nz,sum_b1mAtm1At, sum_bAtm11mAt, sum_bAtm1At,sum_b1mAtm1At_T,sum_bAtm11mAt_T, sum_bAtm1At_T)
 
-		# gl.timer.cum('uvw')
 		if self.fix_communities == False:
 			d_u = self._update_U(subs_nzp,subs_nz)
 			self._update_cache(data_b1mAtm1At,data_bAtm11mAt,data_bAtm1At,data0,data_b1mAtm1AtT,data_bAtm11mAtT,data_bAtm1AtT,data0_T,subs_nzp,subs_nz,sum_b1mAtm1At, sum_bAtm11mAt, sum_bAtm1At,sum_b1mAtm1At_T,sum_bAtm11mAt_T, sum_bAtm1At_T) 
@@ -1062,8 +957,6 @@ class Dyn_ACD_wtemp:
 		if self.fix_mupr == False:
 			# s = time.time()
 			d_mupr = self._update_mupr(data0, subs_nz)
-			# e = time.time()
-			# print('mu',e-s)
 			self._update_cache(data_b1mAtm1At,data_bAtm11mAt,data_bAtm1At,data0,data_b1mAtm1AtT,data_bAtm11mAtT,data_bAtm1AtT,data0_T,subs_nzp,subs_nz,sum_b1mAtm1At, sum_bAtm11mAt, sum_bAtm1At,sum_b1mAtm1At_T,sum_bAtm11mAt_T, sum_bAtm1At_T)
 		else:
 			d_mupr = 0. 
@@ -1088,7 +981,6 @@ class Dyn_ACD_wtemp:
 
 		if self.fix_ell == False:
 			if self.T > 0:
-				# denominator = (data_T_vals * self.beta_hat[subs_nzp[0]]).sum()  
 				d_ell = self._update_ell(data_b1mAtm1At, subs_nzp)
 				self._update_cache(data_b1mAtm1At,data_bAtm11mAt,data_bAtm1At,data0,data_b1mAtm1AtT,data_bAtm11mAtT,data_bAtm1AtT,data0_T,subs_nzp,subs_nz,sum_b1mAtm1At, sum_bAtm11mAt, sum_bAtm1At,sum_b1mAtm1At_T,sum_bAtm11mAt_T, sum_bAtm1At_T)
 			else:
@@ -1100,9 +992,6 @@ class Dyn_ACD_wtemp:
 		return d_u, d_v, d_w, d_beta, d_phi, d_ell, d_pibr, d_mupr
 
 
-	# @gl.timeit('pibr')
-
-	# @gl.timeit('pibr')
 	def _update_pibr(self,  data, subs_nz):
 		"""
 			Update reciprocity coefficient eta.
@@ -1123,23 +1012,11 @@ class Dyn_ACD_wtemp:
 			Adata = np.copy(self.Q0A0) 
 		
 		self.pibr = Adata / self.Qsum
-
-		if (self.pibr > 1):  
-			self.pibr = 0.9999999
-			print('self.pibr:', self.pibr)
-			dist_pibr = self.pibr - self.pibr_old
-			self.pibr_old = np.copy(self.pibr)
-		elif (self.pibr < 1e-12):
-			self.pibr = 0.00000001
-			dist_pibr = abs(self.pibr - self.pibr_old) 
-			self.pibr_old = np.copy(self.pibr)  
-		else:
-			dist_pibr = self.pibr - self.pibr_old
-			self.pibr_old = np.copy(self.pibr)
+		dist_pibr = self.pibr - self.pibr_old
+		self.pibr_old = np.copy(self.pibr)
 		
 		return dist_pibr
 
-	# @gl.timeit('mupr')
 	def _update_mupr(self, data, subs_nz):
 		"""
 			Update reciprocity coefficient eta.
@@ -1156,27 +1033,12 @@ class Dyn_ACD_wtemp:
 			dist_eta : float
 					   Maximum distance between the old and the new reciprocity coefficient eta.
 		"""
-		self.mupr = (self.Qsum / (self.N * (self.N-1)))
-		
-		if (self.mupr > 1): 
-			print('self.mupr:', self.mupr)
-			self.mupr = 0.9999999
-			dist_mupr = self.mupr - self.mupr_old
-			self.mupr_old = np.copy(self.mupr) 
-			# dist_mupr = 0. 
-		elif (self.mupr < 1e-12):
-			self.mupr = 0.00000001
-			dist_mupr = abs(self.mupr - self.mupr_old) 
-			self.mupr_old = np.copy(self.mupr)  
-		else:
-			dist_mupr = self.mupr - self.mupr_old
-			self.mupr_old = np.copy(self.mupr) 
+		self.mupr = (self.Qsum / (self.N * (self.N-1))) 
+		dist_mupr = self.mupr - self.mupr_old
+		self.mupr_old = np.copy(self.mupr) 
 	 
-		  
-
 		return dist_mupr 
 
-	# @gl.timeit('ell')
 	def _update_ell(self, data, subs_nz):
 		"""
 			Update reciprocity coefficient eta.
@@ -1196,69 +1058,27 @@ class Dyn_ACD_wtemp:
 					   Maximum distance between the old and the new reciprocity coefficient eta.
 		# """    
 		self.ell = self.Q1mAtm1At / (self.T*self.phi*self.Qsum)   
-		# self.ell_hat[:] = np.copy(self.ell) 
-		   
-		
-		if self.ell > 1:  
-			print('self.ell:', self.ell) 
-			self.ell = 0.9999999
-			dist_ell = self.ell - self.ell_old
-			self.ell_old = np.copy(self.ell) 
-		elif self.ell < 1e-12:
-			self.ell = 0.00000001
-			dist_ell = abs(self.ell - self.ell_old) 
-			self.ell_old = np.copy(self.ell)  
-		else:
-			dist_ell = self.ell - self.ell_old
-			self.ell_old = np.copy(self.ell) 
-
+		dist_ell = self.ell - self.ell_old 
+		self.ell_old = np.copy(self.ell) 
 		return dist_ell 
 	
  
-	# @gl.timeit('update_phi')
 	def _update_phi(self): 
 		res = root(func_phi_dynamic_t, self.phi_old, args=(self))  
-		self.phi = (res.x)[0]   
-
-		# self.phi = brentq(func_phi_dynamic_t, a=0.000001,b=0.99999, args=(self))   
-		if self.phi > 1:  
-			print('self.phi:', self.phi)
-			self.phi = 0.9999999
-			dist_phi = abs(self.phi - self.phi_old) 
-			self.phi_old = np.copy(self.phi)
-			# self.phi = np.copy(self.phi_old)
-			# dist_phi = 0
-		elif self.phi < 1e-12: 
-			self.phi = 0.00000001
-			dist_phi = abs(self.phi - self.phi_old) 
-			self.phi_old = np.copy(self.phi) 
-		else:
-			dist_phi = abs(self.phi - self.phi_old) 
-			self.phi_old = np.copy(self.phi)
+		self.phi = (res.x)[0]    
+		dist_phi = abs(self.phi - self.phi_old) 
+		self.phi_old = np.copy(self.phi) 
 
 		return dist_phi
 	
-	# @gl.timeit('update_beta')
 	def _update_beta(self):
 		res = root(func_beta_dynamic_t, self.beta_old, args=(self))  
 		self.beta = res.x   
-		# self.beta_hat[:] = np.copy(self.beta)
-
-		if self.beta > 1:   
-			print('beta_hat:', self.beta)
-			self.beta = 0.9999
-			dist_beta = abs(self.beta - self.beta_old) 
-			self.beta_old = np.copy(self.beta) 
-		elif self.beta < 1e-12:
-			raise ValueError('The anomaly coefficient beta has to be in [0, 1]!')  
-		else:
-			dist_beta = abs(self.beta - self.beta_old) 
-			self.beta_old = np.copy(self.beta) 
-
+		dist_beta = abs(self.beta - self.beta_old)
+		self.beta_old = np.copy(self.beta) 
+		
 		return dist_beta
 	
-	
-	# @gl.timeit_cum('update_U')
 	# @timer_func
 	def _update_U(self,subs_nzp,subs_nz):
 		"""
