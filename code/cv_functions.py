@@ -11,8 +11,7 @@ import yaml
 import sys
 from scipy.stats import poisson
 import sktensor as skt
-import matplotlib.pyplot as plt
-# import Dyn_ACD_static 
+import matplotlib.pyplot as plt 
 import Dyn_ACD_wtemp
 
  
