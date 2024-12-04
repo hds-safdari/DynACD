@@ -23,7 +23,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 'Dyn_ACD_wtemp.py' contains the latest version of the algorithm. 
 
+
 "The notebook titled 'Dyn_ACD_Inf_debug-wtemp.ipynb' could be used to debug  the algorithm."
+
+
+
+'Dyn_ACD_gm.py' contains the latest version of the algorithm for generating benchmark synthetic data. 
+
+
+"The notebook titled 'Dyn_ACD_Gm_debug.ipynb' could be used to debug  the generative algorithm."
+
+
 
 - `data/input` : Contains an example of  network having an intrinsic community structure and  given anomaly coefficients, and some example files to initialize the latent variables. They are synthetic data.
 - `data/output` : Contains some results to test the code.

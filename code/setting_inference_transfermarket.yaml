@@ -17,5 +17,4 @@ fix_phi:  False
 constrained: False    
 fix_communities:  False 
 in_parameters: ../data/output/5-fold_cv/real_data/transfermarket/theta_adjacency_2008_23_len_8_False_ACD_Wdynamic
-# in_parameters: ../data/output/5-fold_cv/real_data/US-Air-Transportation/theta_US-Air-Transportation_11_16_1000_5_100_ACD_Wdynamic
 plot_loglik: False
