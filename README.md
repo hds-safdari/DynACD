@@ -21,18 +21,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## What's included
 - `Dyn_ACD` : Contains the Python implementation of Dyn_ACD algorithm, the code for performing the cross-validation procedure and the code for generating benchmark synthetic data with intrinsic community structure and given anomaly coefficients. 
 
--- 'Dyn_ACD_wtemp.py' contains the latest version of the algorithm. 
+\begin{itemize}
+\item 'Dyn_ACD_wtemp.py' contains the latest version of the algorithm. 
 
 
--- "The notebook titled 'Dyn_ACD_Inf_debug-wtemp.ipynb' could be used to debug  the algorithm."
+\item "The notebook titled 'Dyn_ACD_Inf_debug-wtemp.ipynb' could be used to debug  the algorithm."
 
 
 
--- 'Dyn_ACD_gm.py' contains the latest version of the algorithm for generating benchmark synthetic data. 
+\item 'Dyn_ACD_gm.py' contains the latest version of the algorithm for generating benchmark synthetic data. 
 
 
--- "The notebook titled 'Dyn_ACD_Gm_debug.ipynb' could be used to debug  the generative algorithm."
-
+\item "The notebook titled 'Dyn_ACD_Gm_debug.ipynb' could be used to debug  the generative algorithm."
+\end{itemize}
 
 
 - `data/input` : Contains an example of  network having an intrinsic community structure and  given anomaly coefficients, and some example files to initialize the latent variables. They are synthetic data.
