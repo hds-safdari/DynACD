@@ -29,7 +29,7 @@ def import_network(
 	pref_ad: str = 'adjacency_20',
 	suff_ad: str = '_binary',
 	time_span: str = '08_23',
-	infolder: str = '../data/input/real_data/transfermarket/'
+	infolder: str = '../../data/input/real_data/transfermarket/'
 )-> pd.DataFrame:
 
 	dataset = f"{pref_ad}{time_span}{suff_ad}"
@@ -43,7 +43,7 @@ def import_inferred_params(
 	suff_ad: str = '_binary',
 	time_span: str = '08_23',
 	K: int = 8,
-	infolder: str = '../data/input/real_data/transfermarket/'
+	infolder: str = '../../data/input/real_data/transfermarket/'
 )-> dict:
 
 	# infile_params = f"{infolder}theta_{pref_ad}{time_span}{suff_ad}_K{K}_cv.npz"
@@ -56,7 +56,7 @@ def import_inferred_params_cd(
 	suff_ad: str = '_binary',
 	time_span: str = '08_23',
 	K: int = 8,
-	infolder: str = '../data/output/5-fold_cv/real_data/transfermarket/'
+	infolder: str = '../../data/output/5-fold_cv/real_data/transfermarket/'
 )-> Tuple[dict,str]:
 	'''
 	`Dyn_ACD` with `flag_anomaly == False`
@@ -66,7 +66,7 @@ def import_inferred_params_cd(
 	return (np.load(infile_params, allow_pickle=True),infile_params)
 
 def import_metadata(
-	infolder: str = '../data/input/real_data/transfermarket/'
+	infolder: str = '../../data/input/real_data/transfermarket/'
 	)-> pd.DataFrame:
 
 	input_meta_in_data = pd.read_csv(f"{infolder}income.csv", index_col=None, header=0, sep=',')
