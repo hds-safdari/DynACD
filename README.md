@@ -16,28 +16,22 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## What's Included
 
+- **`Dyn_ACD`**: Contains the following:
+  - `Dyn_ACD_wtemp.py`: Latest version of the Dyn_ACD algorithm.
+  - Notebook: `Dyn_ACD_Inf_debug-wtemp.ipynb` (for debugging the Dyn_ACD algorithm).
+  - `Dyn_ACD_gm.py`: Latest version of the generative algorithm for benchmark synthetic data.
+  - Notebook: `Dyn_ACD_Gm_debug.ipynb` (for debugging the generative algorithm).
 
-## What's included
-- `Dyn_ACD` : Contains the Python implementation of Dyn_ACD algorithm, the code for performing the cross-validation procedure and the code for generating benchmark synthetic data with intrinsic community structure and given anomaly coefficients. 
+- **`data/input`**: Contains:
+  - An example of a network with an intrinsic community structure and given anomaly coefficients.
+  - Example files to initialize latent variables (synthetic data).
 
-
-. 'Dyn_ACD_wtemp.py' contains the latest version of the algorithm. 
-
-
-"The notebook titled 'Dyn_ACD_Inf_debug-wtemp.ipynb' could be used to debug  the algorithm."
-
-
-
-'Dyn_ACD_gm.py' contains the latest version of the algorithm for generating benchmark synthetic data. 
-
-
-"The notebook titled 'Dyn_ACD_Gm_debug.ipynb' could be used to debug  the generative algorithm."
-
-
-
-- `data/input` : Contains an example of  network having an intrinsic community structure and  given anomaly coefficients, and some example files to initialize the latent variables. They are synthetic data.
-- `data/output` : Contains some results to test the code.
+- **`data/output`**: Contains:
+  - Sample results to test the code.
+  
+  
 
 ## Requirements
 The project has been developed using Python 3.7 with the packages contained in *requirements.txt*. It is possible to install the dependencies using pip:
