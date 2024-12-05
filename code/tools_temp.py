@@ -108,17 +108,95 @@ def read_graph(df_adj, ego='source', alter='target', undirected=False, noselfloo
 			if row.iloc[l + 2] > 0:
 				if A[l].has_edge(v1, v2):
 					if binary == True:
-						A[l][v1][v2][0]['weight'] = max(int(row[l + 2]),1)
+						A[l][v1][v2][0]['weight'] = max(int(row.iloc[l + 2]),1)
 					else:
-						A[l][v1][v2][0]['weight'] += int(row[l + 2])  # the edge already exists -> no parallel edge created
+						A[l][v1][v2][0]['weight'] += int(row.iloc[l + 2])  # the edge already exists -> no parallel edge created
 				else:
 					if binary == True:
-						A[l].add_edge(v1, v2, weight=max(int(row[l + 2]),1))
+						A[l].add_edge(v1, v2, weight=max(int(row.iloc[l + 2]),1))
 					else:
 						A[l].add_edge(v1, v2, weight=int(row.iloc[l + 2]))
 
 	# remove self-loops
 	if noselfloop:
+		for l in range(L):
+			A[l].remove_edges_from(list(nx.selfloop_edges(A[l])))
+
+	return A
+
+
+
+def read_graph_l1(df_adj, ego='source', alter='target', undirected=False, noselfloop=True, verbose=True, binary=True):
+	"""
+		Create the graph by adding edges and nodes.
+
+		Return the list MultiGraph (or MultiDiGraph if undirected=False) NetworkX objects.
+
+		Parameters
+		----------
+		df_adj : DataFrame
+				 Pandas DataFrame object containing the edges of the graph.
+		ego : str
+			  Name of the column to consider as source of the edge.
+		alter : str
+				Name of the column to consider as target of the edge.
+		undirected : bool
+					 If set to True, the algorithm considers an undirected graph.
+		noselfloop : bool
+					 If set to True, the algorithm removes the self-loops.
+		verbose : bool
+				  Flag to print details.
+		binary : bool
+				 If set to True, read the graph with binary edges.
+
+		Returns
+		-------
+		A : list
+			List of MultiGraph (or MultiDiGraph if undirected=False) NetworkX objects.
+	"""
+
+	# build nodes
+	egoID = df_adj[ego].unique()
+	alterID = df_adj[alter].unique()
+	nodes = list(set(egoID).union(set(alterID)))
+	nodes.sort()
+
+	L = df_adj.shape[1] - 2  # number of layers
+	print(L)
+
+	# build the multilayer NetworkX graph: create a list of graphs, as many graphs as there are layers
+	if undirected:
+		A = [nx.MultiGraph() for _ in range(L)]
+	else:
+		A = [nx.MultiDiGraph() for _ in range(L)]
+
+	if verbose:
+		print('Creating the network ...', end=' ')
+	# set the same set of nodes and order over all layers
+	for l in range(L):
+		A[l].add_nodes_from(nodes)  
+	for index, row in df_adj.iterrows():
+		v1 = row[ego]
+		v2 = row[alter]
+		for l in range(L):
+			if row.iloc[l + 2] > 0:
+				if binary:
+					if A[l].has_edge(v1, v2):
+						A[l][v1][v2][0]['weight'] = 1
+					else:
+						A[l].add_edge(v1, v2, weight=1)
+				else:
+					if A[l].has_edge(v1, v2):
+						A[l][v1][v2][0]['weight'] += int(
+							row.iloc[l + 2])  # the edge already exists, no parallel edge created
+					else:
+						A[l].add_edge(v1, v2, weight=int(row[l + 2]))
+	if verbose:
+		print('done!')
+	# remove self-loops
+	if noselfloop:
+		if verbose:
+			print('Removing self loops')
 		for l in range(L):
 			A[l].remove_edges_from(list(nx.selfloop_edges(A[l])))
 

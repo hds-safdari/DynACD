@@ -23,6 +23,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   - Notebook: `Dyn_ACD_Inf_debug-wtemp.ipynb` (for debugging the Dyn_ACD algorithm).
   - `Dyn_ACD_gm.py`: Latest version of the generative algorithm for benchmark synthetic data.
   - Notebook: `Dyn_ACD_Gm_debug.ipynb` (for debugging the generative algorithm).
+  - `AnomalyInjection.py`: To inject anomalous edges in Real-World datasets.
+  
   - Notebook: `analyze_transfermarkt.ipynb` (to analyse the transfermarkt dataset applying Dyn_ACD algorithm). 
 - **`data/input`**: Contains:
   - An example of a network with an intrinsic community structure and given anomaly coefficients.
