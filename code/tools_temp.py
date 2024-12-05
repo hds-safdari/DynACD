@@ -330,3 +330,35 @@ def plot_M(M, cmap = 'PuBuGn', title=''):
 			break
 	plt.colorbar(PCM, ax=ax)
 	plt.show()
+
+
+def CalculatePermutation(U_infer, U0):
+	"""
+	Permuting the overlap matrix so that the groups from the two partitions correspond
+	U0 has dimension NxK, reference memebership
+	"""
+	N, RANK = U0.shape
+	M = np.dot(np.transpose(U_infer), U0) / float(N);  # dim=RANKxRANK
+	rows = np.zeros(RANK);
+	columns = np.zeros(RANK);
+	P = np.zeros((RANK, RANK));  # Permutation matrix
+	for t in range(RANK):
+		# Find the max element in the remaining submatrix,
+		# the one with rows and columns removed from previous iterations
+		max_entry = 0.;
+		c_index = 0;
+		r_index = 0;
+		for i in range(RANK):
+			if columns[i] == 0:
+				for j in range(RANK):
+					if rows[j] == 0:
+						if M[j, i] > max_entry:
+							max_entry = M[j, i];
+							c_index = i;
+							r_index = j;
+
+		P[r_index, c_index] = 1;
+		columns[c_index] = 1;
+		rows[r_index] = 1;
+
+	return P
